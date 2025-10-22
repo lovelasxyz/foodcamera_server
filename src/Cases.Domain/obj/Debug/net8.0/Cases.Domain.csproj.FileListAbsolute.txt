@@ -1,0 +1,11 @@
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\bin\Debug\net8.0\Cases.Domain.deps.json
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\bin\Debug\net8.0\Cases.Domain.dll
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\bin\Debug\net8.0\Cases.Domain.pdb
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.AssemblyInfoInputs.cache
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.AssemblyInfo.cs
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.dll
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\refint\Cases.Domain.dll
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.pdb
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\ref\Cases.Domain.dll
