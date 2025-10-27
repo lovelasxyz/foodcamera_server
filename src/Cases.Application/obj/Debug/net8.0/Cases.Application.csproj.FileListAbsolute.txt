@@ -13,3 +13,4 @@ C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Application\obj\Debug\
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Application\obj\Debug\net8.0\refint\Cases.Application.dll
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Application\obj\Debug\net8.0\Cases.Application.pdb
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Application\obj\Debug\net8.0\ref\Cases.Application.dll
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Application\obj\Debug\net8.0\Cases.Application.sourcelink.json

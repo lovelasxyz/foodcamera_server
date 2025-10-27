@@ -9,3 +9,4 @@ C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\refint\Cases.Domain.dll
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.pdb
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\ref\Cases.Domain.dll
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.Domain\obj\Debug\net8.0\Cases.Domain.sourcelink.json

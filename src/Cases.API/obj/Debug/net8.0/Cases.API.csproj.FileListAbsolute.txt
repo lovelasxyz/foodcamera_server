@@ -58,3 +58,4 @@ C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.API\bin\Debug\net8.0\M
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.API\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.API\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Dmitry\Desktop\New folder\cases_server\src\Cases.API\obj\Debug\net8.0\Cases.API.sourcelink.json
