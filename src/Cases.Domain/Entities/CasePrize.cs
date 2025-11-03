@@ -1,3 +1,4 @@
+using System;
 using Cases.Domain.Common;
 
 namespace Cases.Domain.Entities;
@@ -14,5 +15,37 @@ public sealed class CasePrize : BaseEntity<int>
 
     private CasePrize()
     {
+    }
+
+    public static CasePrize Create(int caseId, int prizeId, int weight, DateTimeOffset createdAt)
+    {
+        if (weight <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(weight));
+        }
+
+        return new CasePrize
+        {
+            CaseId = caseId,
+            PrizeId = prizeId,
+            Weight = weight,
+            CreatedAt = createdAt
+        };
+    }
+
+    public void UpdateWeight(int weight)
+    {
+        if (weight <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(weight));
+        }
+
+        Weight = weight;
+    }
+
+    public void SetCase(Case @case)
+    {
+        Case = @case ?? throw new ArgumentNullException(nameof(@case));
+        CaseId = @case.Id;
     }
 }

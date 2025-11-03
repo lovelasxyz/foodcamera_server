@@ -1,29 +1,36 @@
 using Cases.Application.Common.Interfaces;
 using Cases.Application.Common.Interfaces.Authentication;
 using Cases.Application.Common.Models;
+using Cases.Application.Users.Interfaces;
 using Cases.Domain.Entities;
+using Cases.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Cases.Application.Identity.Commands.AuthenticateTelegram;
 
 public sealed class AuthenticateTelegramCommandHandler : IRequestHandler<AuthenticateTelegramCommand, AuthenticationResult>
 {
-    private readonly IApplicationDbContext _dbContext;
+    private readonly IUserWriteRepository _users;
     private readonly ITelegramAuthService _telegramAuthService;
     private readonly ITokenService _tokenService;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IUserSessionService _userSessionService;
+    private readonly IUnitOfWork _unitOfWork;
 
     public AuthenticateTelegramCommandHandler(
-        IApplicationDbContext dbContext,
+        IUserWriteRepository users,
         ITelegramAuthService telegramAuthService,
         ITokenService tokenService,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IUserSessionService userSessionService,
+        IUnitOfWork unitOfWork)
     {
-        _dbContext = dbContext;
+        _users = users;
         _telegramAuthService = telegramAuthService;
         _tokenService = tokenService;
         _dateTimeProvider = dateTimeProvider;
+        _userSessionService = userSessionService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<AuthenticationResult> Handle(AuthenticateTelegramCommand request, CancellationToken cancellationToken)
@@ -31,8 +38,7 @@ public sealed class AuthenticateTelegramCommandHandler : IRequestHandler<Authent
         var telegramUser = _telegramAuthService.ValidateAndParse(request.InitData);
         var now = _dateTimeProvider.UtcNow;
 
-        var user = await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.TelegramId == telegramUser.Id, cancellationToken);
+        var user = await _users.GetByTelegramIdAsync(telegramUser.Id, cancellationToken);
 
         if (user is null)
         {
@@ -45,7 +51,7 @@ public sealed class AuthenticateTelegramCommandHandler : IRequestHandler<Authent
                 telegramUser.AuthDate,
                 now);
 
-            await _dbContext.Users.AddAsync(user, cancellationToken);
+            await _users.AddAsync(user, cancellationToken);
         }
         else
         {
@@ -58,17 +64,20 @@ public sealed class AuthenticateTelegramCommandHandler : IRequestHandler<Authent
                 now);
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+    await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var tokenResult = _tokenService.GenerateToken(user);
+        var session = await _userSessionService.CreateAsync(user, cancellationToken);
 
         return new AuthenticationResult(
             tokenResult.Token,
             tokenResult.ExpiresAt,
+            session.Id,
+            session.ExpiresAt,
             new AuthenticatedUserDto(
                 user.Id,
                 user.Name,
-                user.Role,
+                user.Role.ToDatabaseValue(),
                 user.TelegramUsername,
                 user.Balance));
     }

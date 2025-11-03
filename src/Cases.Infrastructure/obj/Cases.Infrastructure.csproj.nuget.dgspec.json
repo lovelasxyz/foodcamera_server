@@ -227,6 +227,10 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[8.0.3, )"
+            },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[8.0.4, )"
@@ -248,6 +252,9 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }

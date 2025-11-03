@@ -1,5 +1,6 @@
 using System.Linq;
 using Cases.Domain.Common;
+using Cases.Domain.Enums;
 
 namespace Cases.Domain.Entities;
 
@@ -7,7 +8,7 @@ public sealed class User : AggregateRoot<Guid>
 {
     public string? Name { get; private set; }
     public decimal Balance { get; private set; }
-    public string Role { get; private set; } = "regular";
+    public UserRole Role { get; private set; } = UserRole.Regular;
     public string? TelegramId { get; private set; }
     public string? TelegramUsername { get; private set; }
     public long? TelegramRegisteredAt { get; private set; }
@@ -39,7 +40,7 @@ public sealed class User : AggregateRoot<Guid>
             Id = Guid.NewGuid(),
             Name = BuildDisplayName(firstName, lastName),
             Balance = 0,
-            Role = "regular",
+            Role = UserRole.Regular,
             TelegramId = telegramId,
             TelegramUsername = username,
             TelegramRegisteredAt = authDate,

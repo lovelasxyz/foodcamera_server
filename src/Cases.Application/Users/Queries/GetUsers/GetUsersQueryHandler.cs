@@ -1,31 +1,36 @@
-using Cases.Application.Common.Interfaces;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Cases.Application.Common.Models;
+using Cases.Application.Users.Interfaces;
+using Cases.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Cases.Application.Users.Queries.GetUsers;
 
-public sealed class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, IReadOnlyList<UserDto>>
+public sealed class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PagedResult<UserDto>>
 {
-    private readonly IApplicationDbContext _dbContext;
+    private readonly IUserReadRepository _users;
 
-    public GetUsersQueryHandler(IApplicationDbContext dbContext)
+    public GetUsersQueryHandler(IUserReadRepository users)
     {
-        _dbContext = dbContext;
+        _users = users;
     }
 
-    public async Task<IReadOnlyList<UserDto>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<UserDto>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
     {
-        return await _dbContext.Users
-            .AsNoTracking()
-            .OrderByDescending(user => user.CreatedAt)
-            .Take(Math.Max(1, request.Limit))
+        var (items, totalCount) = await _users.GetPagedAsync(request.PageNumber, request.PageSize, cancellationToken);
+
+        var dtos = items
             .Select(user => new UserDto(
                 user.Id,
                 user.Name,
                 user.Balance,
-                user.Role,
+                user.Role.ToDatabaseValue(),
                 user.TelegramUsername,
                 user.LastAuthAt))
-            .ToListAsync(cancellationToken);
+            .ToList();
+
+        return new PagedResult<UserDto>(dtos, totalCount, request.PageNumber, request.PageSize);
     }
 }

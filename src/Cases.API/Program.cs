@@ -1,8 +1,12 @@
 using Cases.Application;
 using Cases.Application.Common.Interfaces;
 using System.Text;
+using Cases.API.Middleware;
 using Cases.Infrastructure;
+using Cases.Infrastructure.Authentication.Session;
 using Cases.Infrastructure.Configuration;
+using Cases.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -13,6 +17,26 @@ builder.Services
     .AddApplicationServices()
     .AddInfrastructure(builder.Configuration);
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevelopmentClient", policy =>
+    {
+    policy.WithOrigins(
+        "http://localhost:5173",
+        "https://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://127.0.0.1:5173",
+        "http://localhost:4173",
+        "http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var jwtSettings = builder.Configuration
     .GetSection("Authentication:Jwt")
     .Get<JwtSettings>() ?? throw new InvalidOperationException("JWT settings are not configured.");
@@ -22,10 +46,28 @@ if (string.IsNullOrWhiteSpace(jwtSettings.Secret))
     throw new InvalidOperationException("JWT secret is not configured.");
 }
 
+var sessionCookieName = builder.Configuration.GetValue<string>("Authentication:Session:CookieName")
+    ?? SessionAuthenticationDefaults.SessionCookieName;
+
 builder.Services.AddAuthentication(options =>
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = "Composite";
+        options.DefaultChallengeScheme = "Composite";
+    })
+    .AddPolicyScheme("Composite", "SessionOrJwt", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            var authorizationHeader = context.Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrWhiteSpace(authorizationHeader) && authorizationHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                return JwtBearerDefaults.AuthenticationScheme;
+            }
+
+            return context.Request.Cookies.ContainsKey(sessionCookieName)
+                ? SessionAuthenticationDefaults.AuthenticationScheme
+                : JwtBearerDefaults.AuthenticationScheme;
+        };
     })
     .AddJwtBearer(options =>
     {
@@ -40,7 +82,10 @@ builder.Services.AddAuthentication(options =>
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
-    });
+    })
+    .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(
+        SessionAuthenticationDefaults.AuthenticationScheme,
+        _ => { });
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
@@ -82,6 +127,8 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -89,14 +136,16 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
+app.UseCors("DevelopmentClient");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/health", async (IApplicationDbContext dbContext, CancellationToken cancellationToken) =>
+app.MapGet("/health", async (IUnitOfWork unitOfWork, CancellationToken cancellationToken) =>
 {
-    var databaseConnected = await dbContext.CanConnectAsync(cancellationToken);
+    var databaseConnected = await unitOfWork.CanConnectAsync(cancellationToken);
 
     return Results.Ok(new
     {

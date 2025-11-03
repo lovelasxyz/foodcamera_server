@@ -1,4 +1,5 @@
 using Cases.Domain.Entities;
+using Cases.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,7 +30,8 @@ public sealed class PrizeConfiguration : IEntityTypeConfiguration<Prize>
 
         builder.Property(prize => prize.Rarity)
             .HasColumnName("rarity")
-            .HasMaxLength(50);
+            .HasColumnType("prize_rarity")
+            .HasDefaultValue(PrizeRarity.Common);
 
         builder.Property(prize => prize.IsShard)
             .HasColumnName("is_shard");
@@ -59,10 +61,11 @@ public sealed class PrizeConfiguration : IEntityTypeConfiguration<Prize>
 
         builder.Property(prize => prize.BenefitType)
             .HasColumnName("benefit_type")
-            .HasMaxLength(50);
+            .HasColumnType("benefit_type");
 
         builder.Property(prize => prize.BenefitDataJson)
-            .HasColumnName("benefit_data");
+            .HasColumnName("benefit_data")
+            .HasColumnType("jsonb");
 
         builder.Property(prize => prize.DropWeight)
             .HasColumnName("drop_weight")
@@ -80,5 +83,9 @@ public sealed class PrizeConfiguration : IEntityTypeConfiguration<Prize>
         builder.HasMany(prize => prize.CasePrizes)
             .WithOne(cp => cp.Prize)
             .HasForeignKey(cp => cp.PrizeId);
+
+        builder.HasIndex(prize => prize.UniqueKey)
+            .IsUnique()
+            .HasDatabaseName("prizes_unique_key_key");
     }
 }

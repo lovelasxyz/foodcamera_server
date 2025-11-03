@@ -7,6 +7,7 @@ using Cases.Application.Common.Models;
 using Cases.Application.Identity.Commands.AuthenticateTelegram;
 using Cases.Domain.Entities;
 using Cases.Infrastructure.Persistence;
+using Cases.Infrastructure.Persistence.Repositories;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -48,18 +49,36 @@ public sealed class AuthenticateTelegramCommandHandlerTests
             .Setup(provider => provider.UtcNow)
             .Returns(now);
 
+        var expectedSessionExpiresAt = now.AddDays(30);
+        UserSession? capturedSession = null;
+
+        var sessionService = new Mock<IUserSessionService>();
+        sessionService
+            .Setup(service => service.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User createdUser, CancellationToken _) =>
+            {
+                capturedSession = UserSession.Create(createdUser, now, expectedSessionExpiresAt);
+                return capturedSession;
+            });
+
+        var userRepository = new UserWriteRepository(context);
+
         var handler = new AuthenticateTelegramCommandHandler(
-            context,
+            userRepository,
             telegramAuthService.Object,
             tokenService.Object,
-            dateTimeProvider.Object);
+            dateTimeProvider.Object,
+            sessionService.Object,
+            context);
 
         var command = new AuthenticateTelegramCommand("init-data");
 
         var result = await handler.Handle(command, CancellationToken.None);
 
-        result.AccessToken.Should().Be(tokenResult.Token);
-        result.ExpiresAt.Should().Be(tokenResult.ExpiresAt);
+    result.AccessToken.Should().Be(tokenResult.Token);
+    result.TokenExpiresAt.Should().Be(tokenResult.ExpiresAt);
+    result.SessionExpiresAt.Should().Be(expectedSessionExpiresAt);
+    result.SessionId.Should().Be(capturedSession!.Id);
         result.User.Name.Should().Be("Jane Doe");
         result.User.TelegramUsername.Should().Be("janed");
 
@@ -73,6 +92,7 @@ public sealed class AuthenticateTelegramCommandHandlerTests
         user.LastAuthAt.Should().Be(telegramUser.AuthDate);
 
         tokenService.Verify(service => service.GenerateToken(user), Times.Once);
+    sessionService.Verify(service => service.CreateAsync(user, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -120,11 +140,27 @@ public sealed class AuthenticateTelegramCommandHandlerTests
             .Setup(provider => provider.UtcNow)
             .Returns(updatedNow);
 
+        var expectedSessionExpiresAt = updatedNow.AddDays(30);
+        UserSession? capturedSession = null;
+
+        var sessionService = new Mock<IUserSessionService>();
+        sessionService
+            .Setup(service => service.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User updatedUser, CancellationToken _) =>
+            {
+                capturedSession = UserSession.Create(updatedUser, updatedNow, expectedSessionExpiresAt);
+                return capturedSession;
+            });
+
+        var userRepository = new UserWriteRepository(context);
+
         var handler = new AuthenticateTelegramCommandHandler(
-            context,
+            userRepository,
             telegramAuthService.Object,
             tokenService.Object,
-            dateTimeProvider.Object);
+            dateTimeProvider.Object,
+            sessionService.Object,
+            context);
 
         var command = new AuthenticateTelegramCommand("init-data");
 
@@ -132,6 +168,8 @@ public sealed class AuthenticateTelegramCommandHandlerTests
 
         result.User.TelegramUsername.Should().Be("janed");
         result.User.Name.Should().Be("Jane Doe");
+    result.SessionId.Should().Be(capturedSession!.Id);
+    result.SessionExpiresAt.Should().Be(expectedSessionExpiresAt);
 
         var user = await context.Users.SingleAsync();
         user.Id.Should().Be(existingUser.Id);
@@ -144,6 +182,7 @@ public sealed class AuthenticateTelegramCommandHandlerTests
         user.CreatedAt.Should().Be(originalNow);
 
         tokenService.Verify(service => service.GenerateToken(user), Times.Once);
+    sessionService.Verify(service => service.CreateAsync(user, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private static CasesDbContext CreateDbContext()

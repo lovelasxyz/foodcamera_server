@@ -1,4 +1,5 @@
 using System;
+using Cases.Domain.Exceptions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;

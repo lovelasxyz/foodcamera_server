@@ -5,6 +5,7 @@ using Cases.Application.Common.Interfaces;
 using Cases.Application.Common.Interfaces.Authentication;
 using Cases.Application.Common.Models;
 using Cases.Domain.Entities;
+using Cases.Domain.Enums;
 using Cases.Infrastructure.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -27,12 +28,14 @@ public sealed class JwtTokenService : ITokenService
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
+        var roleValue = user.Role.ToDatabaseValue();
+
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Role, user.Role),
+            new(ClaimTypes.Role, roleValue),
         };
 
         if (!string.IsNullOrWhiteSpace(user.Name))

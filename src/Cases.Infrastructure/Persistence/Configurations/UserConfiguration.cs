@@ -1,4 +1,5 @@
 using Cases.Domain.Entities;
+using Cases.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,8 +27,8 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(user => user.Role)
             .HasColumnName("role")
-            .HasMaxLength(50)
-            .HasDefaultValue("regular");
+            .HasColumnType("user_role")
+            .HasDefaultValue(UserRole.Regular);
 
         builder.Property(user => user.TelegramId)
             .HasColumnName("telegram_id")
@@ -63,5 +64,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(user => user.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.HasIndex(user => user.TelegramId)
+            .IsUnique()
+            .HasDatabaseName("users_telegram_id_key");
     }
 }

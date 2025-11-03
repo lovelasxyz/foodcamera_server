@@ -35,5 +35,9 @@ public sealed class CasePrizeConfiguration : IEntityTypeConfiguration<CasePrize>
         builder.HasOne(cp => cp.Prize)
             .WithMany(prize => prize.CasePrizes)
             .HasForeignKey(cp => cp.PrizeId);
+
+        builder.HasIndex(cp => new { cp.CaseId, cp.PrizeId })
+            .IsUnique()
+            .HasDatabaseName("case_prizes_case_id_prize_id_key");
     }
 }
