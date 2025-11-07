@@ -12,6 +12,7 @@ using Cases.Infrastructure.Events;
 using Cases.Infrastructure.Persistence;
 using Cases.Infrastructure.Persistence.Extensions;
 using Cases.Infrastructure.Persistence.Repositories;
+using Cases.Infrastructure.RealTime;
 using Cases.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -66,6 +67,7 @@ public static class DependencyInjection
         services.AddSingleton<ITelegramAuthService, TelegramAuthService>();
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddScoped<IUserSessionService, UserSessionService>();
+        services.AddSingleton<ICasesChangeNotifier, SignalRCasesChangeNotifier>();
 
         return services;
     }

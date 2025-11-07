@@ -1,4 +1,5 @@
 using Cases.Application.Cases.Interfaces;
+using Cases.Application.Common;
 using Cases.Application.Common.Interfaces;
 using Cases.Application.Prizes.Interfaces;
 using Cases.Domain.Entities;
@@ -13,17 +14,20 @@ public sealed class AddPrizeToCaseCommandHandler : IRequestHandler<AddPrizeToCas
     private readonly IPrizeReadRepository _prizes;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ICasesChangeNotifier _changeNotifier;
 
     public AddPrizeToCaseCommandHandler(
         ICaseWriteRepository cases,
         IPrizeReadRepository prizes,
-        IUnitOfWork unitOfWork,
-        IDateTimeProvider dateTimeProvider)
+    IUnitOfWork unitOfWork,
+    IDateTimeProvider dateTimeProvider,
+    ICasesChangeNotifier? changeNotifier = null)
     {
         _cases = cases;
         _prizes = prizes;
         _unitOfWork = unitOfWork;
         _dateTimeProvider = dateTimeProvider;
+    _changeNotifier = changeNotifier ?? NullCasesChangeNotifier.Instance;
     }
 
     public async Task<int> Handle(AddPrizeToCaseCommand request, CancellationToken cancellationToken)
@@ -44,6 +48,8 @@ public sealed class AddPrizeToCaseCommandHandler : IRequestHandler<AddPrizeToCas
         await _cases.AddPrizeAsync(casePrize, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _changeNotifier.NotifyCasesUpdatedAsync(cancellationToken);
 
         return casePrize.Id;
     }

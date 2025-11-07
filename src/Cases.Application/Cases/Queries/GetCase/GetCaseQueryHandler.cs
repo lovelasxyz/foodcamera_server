@@ -35,7 +35,18 @@ public sealed class GetCaseQueryHandler : IRequestHandler<GetCaseQuery, CaseDto>
                 cp.Prize.Price,
                 cp.Prize.Rarity.ToDatabaseValue(),
                 cp.Weight,
-                cp.Prize.IsActive))
+                cp.Prize.IsActive,
+                cp.Prize.Image,
+                cp.Prize.IsShard,
+                cp.Prize.ShardKey,
+                cp.Prize.ShardsRequired,
+                cp.Prize.Description,
+                cp.Prize.UniqueKey,
+                cp.Prize.Stackable,
+                cp.Prize.NotAwardIfOwned,
+                cp.Prize.NonRemovableGift,
+                cp.Prize.BenefitType.ToDatabaseValue(),
+                cp.Prize.BenefitDataJson))
             .ToList();
 
         return new CaseDto(
@@ -50,6 +61,7 @@ public sealed class GetCaseQueryHandler : IRequestHandler<GetCaseQuery, CaseDto>
             @case.VisibleFrom,
             @case.VisibleUntil,
             @case.AutoHide,
+            @case.UpdatedAt,
             prizes);
     }
 }

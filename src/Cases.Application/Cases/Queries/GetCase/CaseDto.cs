@@ -14,4 +14,5 @@ public sealed record CaseDto(
     DateTimeOffset VisibleFrom,
     DateTimeOffset? VisibleUntil,
     bool AutoHide,
+    DateTimeOffset UpdatedAt,
     IReadOnlyList<CasePrizeDto> Prizes);

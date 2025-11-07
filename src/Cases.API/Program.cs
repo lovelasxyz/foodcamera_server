@@ -5,6 +5,7 @@ using Cases.API.Middleware;
 using Cases.Infrastructure;
 using Cases.Infrastructure.Authentication.Session;
 using Cases.Infrastructure.Configuration;
+using Cases.Infrastructure.RealTime;
 using Cases.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddApplicationServices()
     .AddInfrastructure(builder.Configuration);
+
+builder.Services.AddSignalR();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -142,6 +145,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<CasesHub>("/hubs/cases");
 
 app.MapGet("/health", async (IUnitOfWork unitOfWork, CancellationToken cancellationToken) =>
 {

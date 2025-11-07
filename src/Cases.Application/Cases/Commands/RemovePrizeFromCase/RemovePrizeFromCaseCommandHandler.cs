@@ -1,4 +1,5 @@
 using Cases.Application.Cases.Interfaces;
+using Cases.Application.Common;
 using Cases.Application.Common.Interfaces;
 using MediatR;
 
@@ -8,11 +9,16 @@ public sealed class RemovePrizeFromCaseCommandHandler : IRequestHandler<RemovePr
 {
     private readonly ICaseWriteRepository _cases;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICasesChangeNotifier _changeNotifier;
 
-    public RemovePrizeFromCaseCommandHandler(ICaseWriteRepository cases, IUnitOfWork unitOfWork)
+    public RemovePrizeFromCaseCommandHandler(
+        ICaseWriteRepository cases,
+        IUnitOfWork unitOfWork,
+        ICasesChangeNotifier? changeNotifier = null)
     {
         _cases = cases;
         _unitOfWork = unitOfWork;
+        _changeNotifier = changeNotifier ?? NullCasesChangeNotifier.Instance;
     }
 
     public async Task<Unit> Handle(RemovePrizeFromCaseCommand request, CancellationToken cancellationToken)
@@ -26,6 +32,8 @@ public sealed class RemovePrizeFromCaseCommandHandler : IRequestHandler<RemovePr
 
         _cases.RemovePrize(casePrize);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _changeNotifier.NotifyCasesUpdatedAsync(cancellationToken);
 
         return Unit.Value;
     }

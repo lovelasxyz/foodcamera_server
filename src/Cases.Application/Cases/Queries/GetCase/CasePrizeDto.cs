@@ -6,4 +6,15 @@ public sealed record CasePrizeDto(
     decimal PrizePrice,
     string? PrizeRarity,
     int Weight,
-    bool PrizeIsActive);
+    bool PrizeIsActive,
+    string? PrizeImage,
+    bool PrizeIsShard,
+    string? PrizeShardKey,
+    int? PrizeShardsRequired,
+    string? PrizeDescription,
+    string? PrizeUniqueKey,
+    bool PrizeStackable,
+    bool PrizeNotAwardIfOwned,
+    bool PrizeNonRemovableGift,
+    string? PrizeBenefitType,
+    string? PrizeBenefitDataJson);
