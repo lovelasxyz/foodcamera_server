@@ -25,15 +25,25 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("DevelopmentClient", policy =>
+    // Get allowed origins from configuration or use defaults
+    var allowedOrigins = builder.Configuration
+        .GetSection("CORS:AllowedOrigins")
+        .Get<string[]>() ?? new[]
+        {
+            // Development origins
+            "http://localhost:5173",
+            "https://localhost:5173",
+            "http://127.0.0.1:5173",
+            "https://127.0.0.1:5173",
+            "http://localhost:4173",
+            "http://localhost:3000",
+            // Production origin (update this to your Vercel URL)
+            "https://cases-phi.vercel.app"
+        };
+
+    options.AddPolicy("AppClient", policy =>
     {
-    policy.WithOrigins(
-        "http://localhost:5173",
-        "https://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://127.0.0.1:5173",
-        "http://localhost:4173",
-        "http://localhost:3000")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -139,7 +149,7 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
-app.UseCors("DevelopmentClient");
+app.UseCors("AppClient");
 
 app.UseAuthentication();
 app.UseAuthorization();
