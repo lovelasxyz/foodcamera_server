@@ -14,6 +14,7 @@ using Cases.Infrastructure.Persistence.Extensions;
 using Cases.Infrastructure.Persistence.Repositories;
 using Cases.Infrastructure.RealTime;
 using Cases.Infrastructure.Services;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,8 @@ public static class DependencyInjection
             // Fallback to DATABASE_URL for hosting environments like Railway
             connectionString = configuration.GetValue<string>("DATABASE_URL");
         }
+
+        connectionString = NormalizeConnectionString(connectionString);
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -76,5 +79,58 @@ public static class DependencyInjection
         services.AddSingleton<ICasesChangeNotifier, SignalRCasesChangeNotifier>();
 
         return services;
+    }
+
+    private static string NormalizeConnectionString(string? connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return connectionString ?? string.Empty;
+        }
+
+        if (!connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) &&
+            !connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+        {
+            return connectionString;
+        }
+
+        if (!Uri.TryCreate(connectionString, UriKind.Absolute, out var uri))
+        {
+            throw new InvalidOperationException("DATABASE_URL is not a valid URI.");
+        }
+
+        var builder = new NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.Port > 0 ? uri.Port : 5432,
+            Database = uri.LocalPath.Trim('/'),
+        };
+
+        var userInfoParts = uri.UserInfo.Split(':', 2);
+        if (userInfoParts.Length > 0 && !string.IsNullOrWhiteSpace(userInfoParts[0]))
+        {
+            builder.Username = Uri.UnescapeDataString(userInfoParts[0]);
+        }
+
+        if (userInfoParts.Length > 1)
+        {
+            builder.Password = Uri.UnescapeDataString(userInfoParts[1]);
+        }
+
+        var query = QueryHelpers.ParseQuery(uri.Query);
+        foreach (var entry in query)
+        {
+            var key = entry.Key;
+            var value = entry.Value.LastOrDefault();
+
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            builder[key] = Uri.UnescapeDataString(value);
+        }
+
+        return builder.ConnectionString;
     }
 }
