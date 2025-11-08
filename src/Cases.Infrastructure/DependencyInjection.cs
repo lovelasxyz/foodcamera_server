@@ -31,7 +31,13 @@ public static class DependencyInjection
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException("Connection string 'Database' is missing in configuration.");
+            // Fallback to DATABASE_URL for hosting environments like Railway
+            connectionString = configuration.GetValue<string>("DATABASE_URL");
+        }
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'Database' or 'DATABASE_URL' is missing in configuration.");
         }
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
