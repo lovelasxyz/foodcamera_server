@@ -81,7 +81,7 @@ public sealed class GetCaseQueryHandlerTests
         dbContext.CasePrizes.AddRange(casePrize1, casePrize2);
         await dbContext.SaveChangesAsync();
 
-    var repository = new CaseReadRepository(dbContext);
+    var repository = new CaseRepository(dbContext);
     var handler = new GetCaseQueryHandler(repository);
 
         var result = await handler.Handle(new GetCaseQuery(caseEntity.Id), CancellationToken.None);
@@ -98,7 +98,7 @@ public sealed class GetCaseQueryHandlerTests
     public async Task Handle_Throws_WhenCaseNotFound()
     {
     await using var dbContext = DbContextFactory.CreateInMemory();
-    var repository = new CaseReadRepository(dbContext);
+    var repository = new CaseRepository(dbContext);
     var handler = new GetCaseQueryHandler(repository);
 
         await FluentActions.Invoking(() => handler.Handle(new GetCaseQuery(123), CancellationToken.None))

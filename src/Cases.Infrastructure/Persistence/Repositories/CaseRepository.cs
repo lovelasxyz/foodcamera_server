@@ -28,13 +28,26 @@ public sealed class CaseRepository : ICaseReadRepository, ICaseWriteRepository
             query = query.Where(@case => @case.IsActive);
         }
 
-        var cases = await query
-            .OrderByDescending(@case => @case.IsActive)
-            .ThenBy(@case => @case.SortOrder)
+        return await query
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+    }
 
-        return cases;
+    public async Task<IReadOnlyList<Case>> GetWithPrizesAsync(bool includeInactive, CancellationToken cancellationToken = default)
+    {
+        IQueryable<Case> query = _dbContext.Cases
+            .AsNoTracking()
+            .Include(@case => @case.CasePrizes)
+                .ThenInclude(casePrize => casePrize.Prize);
+
+        if (!includeInactive)
+        {
+            query = query.Where(@case => @case.IsActive);
+        }
+
+        return await query
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async Task<Case?> GetByIdAsync(int id, CancellationToken cancellationToken = default)

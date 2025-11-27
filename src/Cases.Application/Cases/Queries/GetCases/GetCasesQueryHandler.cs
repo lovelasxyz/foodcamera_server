@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cases.Application.Cases.Interfaces;
-using Cases.Domain.Entities;
 using MediatR;
 
 namespace Cases.Application.Cases.Queries.GetCases;
@@ -21,11 +20,7 @@ public sealed class GetCasesQueryHandler : IRequestHandler<GetCasesQuery, IReadO
     {
         var caseEntities = await _cases.GetAsync(request.IncludeInactive, cancellationToken);
 
-        IEnumerable<Case> filtered = request.IncludeInactive
-            ? caseEntities
-            : caseEntities.Where(@case => @case.IsActive);
-
-        var ordered = filtered
+        var ordered = caseEntities
             .OrderByDescending(@case => @case.IsActive)
             .ThenBy(@case => @case.SortOrder);
 

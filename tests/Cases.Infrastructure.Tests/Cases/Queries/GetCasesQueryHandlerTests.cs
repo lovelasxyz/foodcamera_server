@@ -29,7 +29,7 @@ public sealed class GetCasesQueryHandlerTests
 		dbContext.Cases.AddRange(caseA, caseB, caseC);
 		await dbContext.SaveChangesAsync();
 
-	var repository = new CaseReadRepository(dbContext);
+	var repository = new CaseRepository(dbContext);
 	var handler = new GetCasesQueryHandler(repository);
 
 		var result = await handler.Handle(new GetCasesQuery(Limit: null, IncludeInactive: false), CancellationToken.None);
@@ -54,7 +54,7 @@ public sealed class GetCasesQueryHandlerTests
 
 		await dbContext.SaveChangesAsync();
 
-	var repository = new CaseReadRepository(dbContext);
+	var repository = new CaseRepository(dbContext);
 	var handler = new GetCasesQueryHandler(repository);
 
 		var result = await handler.Handle(new GetCasesQuery(Limit: 3, IncludeInactive: true), CancellationToken.None);

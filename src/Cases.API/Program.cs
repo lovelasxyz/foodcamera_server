@@ -2,6 +2,7 @@ using Cases.Application;
 using Cases.Application.Common.Interfaces;
 using System.Text;
 using Cases.API.Middleware;
+using Cases.API.Authorization;
 using Cases.Infrastructure;
 using Cases.Infrastructure.Authentication.Session;
 using Cases.Infrastructure.Configuration;
@@ -98,7 +99,8 @@ builder.Services.AddAuthentication(options =>
     })
     .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(
         SessionAuthenticationDefaults.AuthenticationScheme,
-        _ => { });
+        _ => { })
+    .AddScheme<AuthenticationSchemeOptions, BotApiKeyAuthenticationHandler>("BotApiKey", null);
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
