@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Cases.Application.Common.Interfaces.Authentication;
 using Cases.Application.Common.Models;
 using Cases.Infrastructure.Configuration;
@@ -38,6 +39,19 @@ public sealed class TelegramAuthService : ITelegramAuthService
                 pair => pair.Value.ToString(),
                 StringComparer.Ordinal);
 
+        // Parse user JSON if present (Telegram WebApp format)
+        JsonElement? userJson = null;
+        if (dictionary.TryGetValue("user", out var userJsonString) && !string.IsNullOrWhiteSpace(userJsonString))
+        {
+            try
+            {
+                userJson = JsonSerializer.Deserialize<JsonElement>(userJsonString);
+            }
+            catch (JsonException)
+            {
+                throw new UnauthorizedAccessException("Invalid user JSON in Telegram init data.");
+            }
+        }
         if (!dictionary.TryGetValue("hash", out var providedHash))
         {
             throw new UnauthorizedAccessException("Telegram hash is missing.");
@@ -61,7 +75,34 @@ public sealed class TelegramAuthService : ITelegramAuthService
             throw new UnauthorizedAccessException("Telegram auth data signature is invalid.");
         }
 
-        if (!dictionary.TryGetValue("id", out var telegramId))
+        // Extract user data - either from parsed user JSON or flat dictionary (Login Widget format)
+        string? telegramId = null;
+        string? firstName = null;
+        string? lastName = null;
+        string? username = null;
+        string? photoUrl = null;
+
+        if (userJson.HasValue)
+        {
+            // WebApp format: user is a JSON object
+            var user = userJson.Value;
+            telegramId = user.TryGetProperty("id", out var idProp) ? idProp.ToString() : null;
+            firstName = user.TryGetProperty("first_name", out var fnProp) ? fnProp.GetString() : null;
+            lastName = user.TryGetProperty("last_name", out var lnProp) ? lnProp.GetString() : null;
+            username = user.TryGetProperty("username", out var unProp) ? unProp.GetString() : null;
+            photoUrl = user.TryGetProperty("photo_url", out var puProp) ? puProp.GetString() : null;
+        }
+        else
+        {
+            // Login Widget format: flat fields
+            dictionary.TryGetValue("id", out telegramId);
+            dictionary.TryGetValue("first_name", out firstName);
+            dictionary.TryGetValue("last_name", out lastName);
+            dictionary.TryGetValue("username", out username);
+            dictionary.TryGetValue("photo_url", out photoUrl);
+        }
+
+        if (string.IsNullOrWhiteSpace(telegramId))
         {
             throw new UnauthorizedAccessException("Telegram user id is missing.");
         }
@@ -70,11 +111,6 @@ public sealed class TelegramAuthService : ITelegramAuthService
         {
             throw new UnauthorizedAccessException("Telegram auth date is invalid.");
         }
-
-        dictionary.TryGetValue("first_name", out var firstName);
-        dictionary.TryGetValue("last_name", out var lastName);
-        dictionary.TryGetValue("username", out var username);
-        dictionary.TryGetValue("photo_url", out var photoUrl);
 
         return new TelegramUserData(
             telegramId,
