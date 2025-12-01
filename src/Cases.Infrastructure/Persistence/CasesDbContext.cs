@@ -25,6 +25,7 @@ public sealed class CasesDbContext : DbContext, IUnitOfWork
     public DbSet<Case> Cases => Set<Case>();
     public DbSet<CasePrize> CasePrizes => Set<CasePrize>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
+    public DbSet<UserInventoryItem> UserInventoryItems => Set<UserInventoryItem>();
 
     public Task<bool> CanConnectAsync(CancellationToken cancellationToken = default)
     {

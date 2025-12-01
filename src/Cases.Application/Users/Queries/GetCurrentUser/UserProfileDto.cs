@@ -31,7 +31,25 @@ public sealed record UserInventoryItemDto(
     int PrizeId,
     string FromCase,
     long ObtainedAt,
-    string Status);
+    string Status,
+    UserPrizeDto? Prize);
+
+public sealed record UserPrizeDto(
+    int Id,
+    string Name,
+    decimal Price,
+    string? Image,
+    string Rarity,
+    bool IsShard,
+    string? ShardKey,
+    int? ShardsRequired,
+    string? Description,
+    string? Benefit,
+    string? UniqueKey,
+    bool Stackable,
+    bool NotAwardIfOwned,
+    bool NonRemovableGift
+);
 
 public sealed record UserPerksDto(
     bool? FreeSpins,

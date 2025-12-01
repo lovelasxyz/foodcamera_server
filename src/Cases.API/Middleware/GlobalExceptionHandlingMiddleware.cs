@@ -40,7 +40,7 @@ public sealed class GlobalExceptionHandlingMiddleware
             FluentValidation.ValidationException validation => (HttpStatusCode.BadRequest,
                 string.Join("; ", validation.Errors.Select(e => e.ErrorMessage))),
             UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized access"),
-            _ => (HttpStatusCode.InternalServerError, "An error occurred")
+            _ => (HttpStatusCode.InternalServerError, exception.ToString())
         };
 
         if (statusCode == HttpStatusCode.InternalServerError)

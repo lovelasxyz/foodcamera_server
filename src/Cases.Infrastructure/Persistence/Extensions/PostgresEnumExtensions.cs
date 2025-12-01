@@ -14,6 +14,7 @@ public static class PostgresEnumExtensions
         builder.MapEnum<PrizeRarity>("prize_rarity", nameTranslator);
         builder.MapEnum<BenefitType>("benefit_type", nameTranslator);
         builder.MapEnum<UserRole>("user_role", nameTranslator);
+        builder.MapEnum<InventoryItemStatus>("inventory_item_status", nameTranslator);
     }
 
     public static void ConfigurePostgresEnums(this ModelBuilder modelBuilder)
@@ -23,5 +24,6 @@ public static class PostgresEnumExtensions
         modelBuilder.HasPostgresEnum<PrizeRarity>("prize_rarity");
         modelBuilder.HasPostgresEnum<BenefitType>("benefit_type");
         modelBuilder.HasPostgresEnum<UserRole>("user_role");
+        modelBuilder.HasPostgresEnum<InventoryItemStatus>("inventory_item_status");
     }
 }

@@ -2,6 +2,7 @@ using Cases.Application.Common.Interfaces;
 using Cases.Application.Common.Interfaces.Authentication;
 using Cases.Application.Cases.Interfaces;
 using Cases.Application.Identity.Interfaces;
+using Cases.Application.Inventory.Interfaces;
 using Cases.Application.Prizes.Interfaces;
 using Cases.Application.Users.Interfaces;
 using Cases.Infrastructure.Authentication.Jwt;
@@ -66,7 +67,8 @@ public static class DependencyInjection
         services.AddScoped<IPrizeReadRepository, PrizeReadRepository>();
         services.AddScoped<IPrizeWriteRepository, PrizeWriteRepository>();
         services.AddScoped<IUserSessionReadRepository, UserSessionReadRepository>();
-    services.AddScoped<IUserSessionWriteRepository, UserSessionWriteRepository>();
+        services.AddScoped<IUserSessionWriteRepository, UserSessionWriteRepository>();
+        services.AddScoped<IUserInventoryRepository, UserInventoryRepository>();
 
         services.Configure<JwtSettings>(configuration.GetSection("Authentication:Jwt"));
         services.Configure<TelegramSettings>(configuration.GetSection("Authentication:Telegram"));

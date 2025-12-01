@@ -38,6 +38,7 @@ builder.Services.AddCors(options =>
             "https://127.0.0.1:5173",
             "http://localhost:4173",
             "http://localhost:3000",
+            "http://localhost:3001",
             // Production origin (update this to your Vercel URL)
             "https://cases-phi.vercel.app"
         };

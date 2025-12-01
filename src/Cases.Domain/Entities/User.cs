@@ -52,6 +52,20 @@ public sealed class User : AggregateRoot<Guid>
         };
     }
 
+    public static User CreateGuest(DateTimeOffset now)
+    {
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            Name = "Guest",
+            Balance = 100, // Give some starting balance for testing
+            Role = UserRole.Regular,
+            CreatedAt = now,
+            UpdatedAt = now,
+            LastAuthAt = now.ToUnixTimeSeconds()
+        };
+    }
+
     public void UpdateTelegramProfile(
         string? firstName,
         string? lastName,
@@ -66,6 +80,21 @@ public sealed class User : AggregateRoot<Guid>
         TelegramPhotoUrl = photoUrl;
         LastAuthAt = authDate;
         TelegramRegisteredAt ??= authDate;
+        UpdatedAt = now;
+    }
+
+    public void Debit(decimal amount, DateTimeOffset now)
+    {
+        if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
+        if (Balance < amount) throw new InvalidOperationException("Insufficient balance");
+        Balance -= amount;
+        UpdatedAt = now;
+    }
+
+    public void Credit(decimal amount, DateTimeOffset now)
+    {
+        if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
+        Balance += amount;
         UpdatedAt = now;
     }
 

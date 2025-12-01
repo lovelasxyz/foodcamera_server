@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cases.Application.Common.Interfaces;
 using Cases.Application.Users.Interfaces;
+using Cases.Application.Inventory.Interfaces;
 using Cases.Domain.Enums;
 using MediatR;
 
@@ -13,11 +15,16 @@ public sealed class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQ
 {
     private readonly IUserReadRepository _users;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IUserInventoryRepository _inventory;
 
-    public GetCurrentUserQueryHandler(IUserReadRepository users, ICurrentUserService currentUserService)
+    public GetCurrentUserQueryHandler(
+        IUserReadRepository users,
+        ICurrentUserService currentUserService,
+        IUserInventoryRepository inventory)
     {
         _users = users;
         _currentUserService = currentUserService;
+        _inventory = inventory;
     }
 
     public async Task<UserProfileDto> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
@@ -53,6 +60,31 @@ public sealed class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQ
                 registeredAt);
         }
 
+        var inventoryItems = await _inventory.GetByUserIdAsync(user.Id, cancellationToken);
+        var inventoryDtos = inventoryItems.Select(i => new UserInventoryItemDto(
+            i.InventoryItemId,
+            i.PrizeId,
+            i.FromCase ?? "Unknown",
+            i.ObtainedAt,
+            i.Status.ToString().ToLowerInvariant(),
+            new UserPrizeDto(
+                i.Prize.Id,
+                i.Prize.Name ?? "Unknown Prize",
+                i.Prize.Price,
+                i.Prize.Image ?? "/assets/images/placeholder.png",
+                i.Prize.Rarity.ToString().ToLowerInvariant(),
+                i.Prize.IsShard,
+                i.Prize.ShardKey,
+                i.Prize.ShardsRequired,
+                i.Prize.Description,
+                null, // Benefit mapping skipped for simplicity
+                i.Prize.UniqueKey,
+                i.Prize.Stackable,
+                i.Prize.NotAwardIfOwned,
+                i.Prize.NonRemovableGift
+            )
+        )).ToList();
+
         return new UserProfileDto(
             user.Id.ToString(),
             user.Name,
@@ -63,7 +95,7 @@ public sealed class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQ
             isAdmin,
             stats,
             telegram,
-            Array.Empty<UserInventoryItemDto>(),
+            inventoryDtos,
             new Dictionary<string, int>(),
             new Dictionary<string, long>(),
             null);

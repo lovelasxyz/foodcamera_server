@@ -10,7 +10,11 @@
       "Bash(del \"c:\\Users\\Dmitry\\Desktop\\New folder\\cases_server\\src\\Cases.Domain\\Exceptions\\ValidationException.cs\")",
       "Bash(cat:*)",
       "Bash(tree:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(del \"c:\\Users\\Dmitry\\Desktop\\New folder\\cases_server\\src\\Cases.Domain\\Entities\\SpinHistory.cs\")",
+      "Bash(del \"c:\\Users\\Dmitry\\Desktop\\New folder\\cases_server\\src\\Cases.Infrastructure\\Persistence\\Configurations\\SpinHistoryConfiguration.cs\")",
+      "Bash(del \"c:\\Users\\Dmitry\\Desktop\\New folder\\cases_server\\src\\Cases.Application\\Game\\Interfaces\\ISpinHistoryRepository.cs\")",
+      "Bash(del \"c:\\Users\\Dmitry\\Desktop\\New folder\\cases_server\\src\\Cases.Infrastructure\\Persistence\\Repositories\\SpinHistoryRepository.cs\")"
     ],
     "deny": [],
     "ask": []
