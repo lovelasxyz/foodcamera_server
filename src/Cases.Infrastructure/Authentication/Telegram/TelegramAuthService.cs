@@ -64,7 +64,22 @@ public sealed class TelegramAuthService : ITelegramAuthService
                 .OrderBy(pair => pair.Key, StringComparer.Ordinal)
                 .Select(pair => $"{pair.Key}={pair.Value}"));
 
-        var secretKey = SHA256.HashData(Encoding.UTF8.GetBytes(_settings.BotToken));
+        // Telegram WebApp uses different HMAC algorithm than Login Widget
+        // WebApp: HMAC_SHA256(HMAC_SHA256(bot_token, "WebAppData"), data_check_string)
+        // Login Widget: HMAC_SHA256(SHA256(bot_token), data_check_string)
+        
+        byte[] secretKey;
+        if (userJson.HasValue)
+        {
+            // WebApp format - use WebAppData as key for first HMAC
+            using var hmacWebApp = new HMACSHA256(Encoding.UTF8.GetBytes("WebAppData"));
+            secretKey = hmacWebApp.ComputeHash(Encoding.UTF8.GetBytes(_settings.BotToken));
+        }
+        else
+        {
+            // Login Widget format - use SHA256 of bot token
+            secretKey = SHA256.HashData(Encoding.UTF8.GetBytes(_settings.BotToken));
+        }
 
         using var hmac = new HMACSHA256(secretKey);
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataCheckString));
