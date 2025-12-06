@@ -104,7 +104,11 @@ builder.Services.AddAuthentication(options =>
     .AddScheme<AuthenticationSchemeOptions, BotApiKeyAuthenticationHandler>("BotApiKey", null);
 
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
